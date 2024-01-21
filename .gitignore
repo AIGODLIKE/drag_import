@@ -1,3 +1,5 @@
 
 __pycache__/
 .idea/
+cmake-build-debug/
+.hook2.dll/

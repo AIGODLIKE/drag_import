@@ -56,13 +56,18 @@ if is_support():  # 如果支持当前操作系统
     elif sys.platform == "win32":  # 如果是Windows系统
         from ctypes import WinDLL  # 导入WinDLL类
 
-        dll_path = cur_path.joinpath("hook.dll").as_posix()  # 构建.dll库文件的路径
+        # dll_path = cur_path.joinpath("hook.dll").as_posix()  # 构建.dll库文件的路径
+        dll_path="G:\\work\\001Blender\\blender_init\\addons\\drag_import\\cmake-build-debug\\hook.dll"
+        # dll_path = cur_path.joinpath('cmake-build-debug', 'hook.dll').as_posix()
+        # dll_path = './cmake-build-debug/hook.dll' # 构建.dll库文件的路径
         if sys.version_info >= (3, 9, 0):  # 如果Python版本大于等于3.9
             os.add_dll_directory(cur_path.as_posix())  # 将当前路径添加到DLL搜索路径
             try:
-                dll = WinDLL(dll_path, winmode=RTLD_GLOBAL)  # 尝试加载全局模式的.dll库文件
+                # dll = WinDLL(dll_path, winmode=RTLD_GLOBAL)  # 尝试加载全局模式的.dll库文件
+                dll = CDLL(dll_path)  # 尝试加载全局模式的.dll库文件
             except BaseException:  # 如果尝试失败
                 dll = CDLL(dll_path, winmode=RTLD_GLOBAL)  # 加载全局模式的.dll库文件
+                # dll = CDLL(dll_path)  # 加载全局模式的.dll库文件
         else:  # 如果Python版本小于3.9
             dll = cdll.LoadLibrary(dll_path)  # 直接加载.dll库文件
 
@@ -135,12 +140,25 @@ def track():  # 定义一个名为track的函数
         CACHED_DPFILES.append(Path(drag_file))  # 将当前拖拽的文件添加到缓存列表
         print('CACHED_DPFILES:', CACHED_DPFILES)
         print('CACHED_DPFILES:', drag_file)
+        if os.path.isdir(drag_file):
+            def popup_menu():
+                print('draw menu')
+                def draw(cls, context):
+                    layout = cls.layout
+                    layout.label(text='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+                    layout.label(text='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+                    layout.label(text='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+                bpy.context.window_manager.popup_menu(draw, title="")
+            Timer.put(popup_menu)
 
         def file_open():
             print('f')
             current_thread = threading.current_thread()
             # 打印当前线程的名称
             print(f"Function is running in thread: {current_thread.name}")
+
+
             # bpy.ops.import_scene.fbx(filepath=str(drag_file))
             # bpy.ops.wm.obj_import(filepath=str(drag_file))
             if drag_file.suffix.lower()== '.fbx':
@@ -178,12 +196,8 @@ def track():  # 定义一个名为track的函数
                                                      use_prepost_rot=True, axis_forward='-Z', axis_up='Y')
                         elif file_extension == '.obj':
                             bpy.ops.wm.obj_import(filepath=str(file_path))
-                def draw(cls,context):
-                    layout=cls.layout
-                    layout.label(text='aa')
 
-                bpy.context.window_manager.popup_menu(draw,title="")
-        Timer.put(file_open)
+        Timer.put2(file_open)
         print('put')
         clear_dragfiles()  # 清除拖拽文件记录
 

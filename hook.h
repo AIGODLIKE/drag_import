@@ -10,7 +10,7 @@
 // 包含必要的头文件
 #include <iostream>
 #include <vector>
-#include <xstring>
+//#include <xstring>
 
 // 定义XLIB宏，用于导出函数
 #ifndef XLIB

@@ -1,0 +1,9 @@
+{
+  "name" : "drag-import",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "a1a1cbc975abf909a6c8985a6a2b8fe20bbd9bd6",
+  "dependencies" : [ {
+    "name" : "polyhook2",
+    "version>=" : "2023-08-11"
+  } ]
+}

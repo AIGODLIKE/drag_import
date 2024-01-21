@@ -2,11 +2,12 @@
 这段代码是用C++语言编写的，用于实现一个Windows下的钩子（hook）库。它主要功能包括捕获鼠标滚轮事件、键盘按键事件、拖拽文件事件等，并提供了一系列导出函数以供外部调用*/
 #include "hook.h"
 // #include "dragdrop.h"
-#include "logger.h"
-#include "ole2.h"
+//#include "logger.h"
+//#include <algorithm>
+//#include "ole2.h"
 #include "polyhook2/Detour/NatDetour.hpp"
 #include "polyhook2/IHook.hpp"
-#include "spdlog/logger.h"
+//#include "spdlog/logger.h"
 
 // 定义GH宏，用于创建钩子
 #define GH(f) PLH::NatDetour((uint64_t)&f, (uint64_t)h##f, &h##f##Tramp)
@@ -30,17 +31,17 @@ static WCHAR dragfiles[512];  // 拖拽文件路径
 static bool is_msg_run = false;  // 消息循环运行标志
 
 // 初始化logger对象，用于输出日志信息
-static Logger *logger = Logger::get_logger("HOOK");
+//static Logger *logger = Logger::get_logger("HOOK");
 
 // 定义一系列的导出函数
 // 设置调试模式
-XLIB void set_debug(bool enable) {
-  if (enable) {
-    logger->set_level(spdlog::level::debug);
-  } else {
-    logger->set_level(spdlog::level::info);
-  }
-}
+//XLIB void set_debug(bool enable) {
+//  if (enable) {
+//    logger->set_level(spdlog::level::debug);
+//  } else {
+//    logger->set_level(spdlog::level::info);
+//  }
+//}
 /*lpMsg 是一个指向MSG结构的指针，它包含了当前的消息信息。
 hWnd 是消息所属窗口的句柄。
 wMsgFilterMin 和 wMsgFilterMax 是用于过滤消息的参数。
@@ -60,23 +61,23 @@ void msgProc(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax,
     // 获取鼠标滚轮的滚动量
     wheel_status = GET_WHEEL_DELTA_WPARAM(lpMsg->wParam);
     // 根据滚动方向输出不同的日志
-    if (wheel_status > 0)
-      logger->debug("{}->MOUSEWHEEL Up {}", ftype, wheel_status);
-    else if (wheel_status < 0)
-      logger->debug("{}->MOUSEWHEEL Down {}", ftype, wheel_status);
+//    if (wheel_status > 0)
+//      logger->debug("{}->MOUSEWHEEL Up {}", ftype, wheel_status);
+//    else if (wheel_status < 0)
+//      logger->debug("{}->MOUSEWHEEL Down {}", ftype, wheel_status);
     break;
   }
   case WM_KEYDOWN: {  // 处理键盘按键事件
     // 获取按键的键码
     int keyCode = lpMsg->wParam;
     // 如果是数字0-9或字母A-Z，输出按键信息
-    if (keyCode >= '0' && keyCode <= '9') {
-      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, keyCode);
-    } else if (keyCode >= 'A' && keyCode <= 'Z') {
-      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, (char)keyCode);
-    } else {
-      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, keyCode);
-    }
+//    if (keyCode >= '0' && keyCode <= '9') {
+//      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, keyCode);
+//    } else if (keyCode >= 'A' && keyCode <= 'Z') {
+//      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, (char)keyCode);
+//    } else {
+//      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, keyCode);
+//    }
     break;
   }
   // 可以根据需要处理更多类型的消息
@@ -120,10 +121,12 @@ UINT hDragQueryFileW(HDROP hDrop, UINT iFile, LPWSTR lpszFile, UINT cch) {
   if (lpszFile) {
     // 计算文件路径的长度，并限制最大长度为512
     int len = min(wcslen(lpszFile) + 1, 512);
-    // 将文件路径复制到dragfiles变量中
+//    int len = std::min(static_cast<int>(wcslen(lpszFile) + 1), 512);
+
+      // 将文件路径复制到dragfiles变量中
     wcscpy_s(dragfiles, len, lpszFile);
     // 使用logger输出拖拽文件路径
-    logger->debug(L"DragQueryFileW: {}", dragfiles);
+//    logger->debug(L"DragQueryFileW: {}", dragfiles);
   }
   return res;  // 返回原始函数的结果
 }
@@ -241,7 +244,7 @@ BOOL CALLBACK EnumProc(HWND hWnd, LPARAM lParam) {
   EnumProc: IME
   */
 
-  logger->info("EnumProc: {}", classname);  // 使用日志记录类名
+//  logger->info("EnumProc: {}", classname);  // 使用日志记录类名
   if (strcmp(classname, "GHOST_WindowClass") != 0) {
     p = hWnd;  // 如果类名不是"GHOST_WindowClass"，则存储当前窗口的句柄到p
   }
