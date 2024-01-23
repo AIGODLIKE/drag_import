@@ -26,78 +26,54 @@ h##f 和 &h##f##Tramp 是使用宏的连接操作符##构造的标识符。
 using namespace std;
 
 // 定义静态变量，用于存储全局状态
-static int wheel_status = 0;  // 鼠标滚轮状态
+//static int wheel_status = 0;  // 鼠标滚轮状态
 static WCHAR dragfiles[512];  // 拖拽文件路径
+static UINT fileCount;
 static bool is_msg_run = false;  // 消息循环运行标志
+static WCHAR** globalFileList = nullptr;
+void allocateFileList(UINT numberOfFiles) {
+    // 先清理之前的列表
+    clearFileList();
 
-// 初始化logger对象，用于输出日志信息
-//static Logger *logger = Logger::get_logger("HOOK");
+    // 为指针数组分配内存
+    globalFileList = new WCHAR*[numberOfFiles];
 
-// 定义一系列的导出函数
-// 设置调试模式
-//XLIB void set_debug(bool enable) {
-//  if (enable) {
-//    logger->set_level(spdlog::level::debug);
-//  } else {
-//    logger->set_level(spdlog::level::info);
-//  }
-//}
-/*lpMsg 是一个指向MSG结构的指针，它包含了当前的消息信息。
-hWnd 是消息所属窗口的句柄。
-wMsgFilterMin 和 wMsgFilterMax 是用于过滤消息的参数。
-ftype 是一个字符数组，通常用来表示函数类型或名称，用于日志记录。
-WM_MOUSEWHEEL 和 WM_KEYDOWN 是Windows定义的消息类型，分别表示鼠标滚轮事件和键盘按键事件。
-这个函数通常作为消息钩子或在消息循环中调用，用于捕获和记录输入事件，如鼠标滚轮滚动和键盘按键。通过使用日志库（如spdlog），
-它能够将捕获的事件信息输出到控制台或日志文件。这种类型的函数通常用于开发需要用户输入交互的应用程序，或者用于调试和监控应用程序的用户输入。*/
-/*
-这段代码定义了一个名为msgProc的函数，它是一个消息处理函数，用于处理Windows消息，
-特别是鼠标滚轮事件和键盘按下事件。这个函数是在一个Windows环境中，通常用于处理窗口或全局消息的回调函数*/
-// 定义消息处理函数
-void msgProc(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax,
-             const char ftype[]) {
-  // 根据lpMsg中的消息类型进行不同的处理
-  switch (lpMsg->message) {
-  case WM_MOUSEWHEEL: {  // 处理鼠标滚轮事件
-    // 获取鼠标滚轮的滚动量
-    wheel_status = GET_WHEEL_DELTA_WPARAM(lpMsg->wParam);
-    // 根据滚动方向输出不同的日志
-//    if (wheel_status > 0)
-//      logger->debug("{}->MOUSEWHEEL Up {}", ftype, wheel_status);
-//    else if (wheel_status < 0)
-//      logger->debug("{}->MOUSEWHEEL Down {}", ftype, wheel_status);
-    break;
-  }
-  case WM_KEYDOWN: {  // 处理键盘按键事件
-    // 获取按键的键码
-    int keyCode = lpMsg->wParam;
-    // 如果是数字0-9或字母A-Z，输出按键信息
-//    if (keyCode >= '0' && keyCode <= '9') {
-//      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, keyCode);
-//    } else if (keyCode >= 'A' && keyCode <= 'Z') {
-//      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, (char)keyCode);
-//    } else {
-//      logger->debug("{}->KEYDOWN KeyCode: {}", ftype, keyCode);
-//    }
-    break;
-  }
-  // 可以根据需要处理更多类型的消息
-  }
+    // 为每个文件路径分配内存
+    for (UINT i = 0; i < numberOfFiles; ++i) {
+        globalFileList[i] = new WCHAR[512];
+    }
 }
+XLIB void clearFileList() {
+    if (globalFileList != nullptr) {
+        // 释放每个文件路径的内存
+        for (UINT i = 0; i < fileCount && globalFileList[i] != nullptr; ++i) {
+            delete[] globalFileList[i];
+            globalFileList[i] = nullptr;
+        }
+
+        // 释放指针数组的内存
+        delete[] globalFileList;
+        globalFileList = nullptr;
+    }
+}
+
+
+
 
 
 // 定义变量用于存储原始PeekMessageW函数的地址
-uint64_t hPeekMessageWTramp = NULL;
-
-// 定义hook后的PeekMessageW函数
-BOOL hPeekMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin,
-                   UINT wMsgFilterMax, UINT wRemoveMsg) {
-  // 调用原始的PeekMessageW函数，并将结果存储在res中
-  BOOL res = PLH::FnCast(hPeekMessageWTramp, &PeekMessageW)(
-      lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-  // 调用msgProc函数处理消息
-  msgProc(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, "PMSGW");
-  return res;  // 返回原始函数的结果
-}
+//uint64_t hPeekMessageWTramp = NULL;
+//
+//// 定义hook后的PeekMessageW函数
+//BOOL hPeekMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin,
+//                   UINT wMsgFilterMax, UINT wRemoveMsg) {
+//  // 调用原始的PeekMessageW函数，并将结果存储在res中
+//  BOOL res = PLH::FnCast(hPeekMessageWTramp, &PeekMessageW)(
+//      lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+//  // 调用msgProc函数处理消息
+////  msgProc(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, "PMSGW");
+//  return res;  // 返回原始函数的结果
+//}
 /*在这段代码中：
 
 hPeekMessageW 是一个hook版本的 PeekMessageW 函数。PeekMessageW 是Windows API中的一个函数，
@@ -114,27 +90,46 @@ uint64_t hDragQueryFileWTramp = NULL;
 
 // 定义hook后的DragQueryFileW函数
 UINT hDragQueryFileW(HDROP hDrop, UINT iFile, LPWSTR lpszFile, UINT cch) {
+
   // 调用原始的DragQueryFileW函数，并将结果存储在res中
   UINT res = PLH::FnCast(hDragQueryFileWTramp, &DragQueryFileW)(hDrop, iFile,
                                                                 lpszFile, cch);
+  /*-------------------------------------------------*/
+
+/*单个字符串*/
   // 如果提供了文件路径lpszFile
   if (lpszFile) {
     // 计算文件路径的长度，并限制最大长度为512
     int len = min(wcslen(lpszFile) + 1, 512);
-//    int len = std::min(static_cast<int>(wcslen(lpszFile) + 1), 512);
-
       // 将文件路径复制到dragfiles变量中
     wcscpy_s(dragfiles, len, lpszFile);
-    // 使用logger输出拖拽文件路径
-//    logger->debug(L"DragQueryFileW: {}", dragfiles);
+    //文件数量
+//    fileCount = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
+    fileCount = PLH::FnCast(hDragQueryFileWTramp, &DragQueryFileW)(hDrop, 0xFFFFFFFF,
+                                                                   nullptr, 0);
+    fileCount = min(fileCount, 1024);  // 确保不超过最大文件数量
+    allocateFileList(fileCount);
+    // 循环处理每个文件
+    for (UINT i = 0; i < fileCount; ++i) {
+        // 将每个文件的路径存储到全局列表中
+        UINT temp = PLH::FnCast(hDragQueryFileWTramp, &DragQueryFileW)(hDrop, i,
+                                                                       globalFileList[i], cch);
+//        DragQueryFileW(hDrop, i, globalFileList[i], cch);
+//        int len = min(wcslen(globalFileList[i]) + 1, 512);
+//        wcscpy_s(dragfiles, len, globalFileList[i]);
+    }
   }
-  return res;  // 返回原始函数的结果
+
+
+
+
+   /*-------------------------------------*/
+    return res;  // 返回原始函数的结果
 }
 /*在这段代码中：
 
 clear_dragfiles 用于清空当前记录的拖拽文件路径。
 get_dragfiles 用于获取当前记录的拖拽文件路径。
-set_wheel_status 和 get_wheel_status 分别用于设置和获取鼠标滚轮的滚动状态。
 set_hook 用于根据传入的布尔值启用或禁用特定的系统钩子。
 这通常用于拦截和修改系统级事件，如消息循环中的消息或拖拽文件事件。*/
 /*
@@ -149,29 +144,25 @@ XLIB void clear_dragfiles() {
 XLIB WCHAR *get_dragfiles() { 
   return dragfiles;  // 返回dragfiles字符串，即拖拽文件的路径
 }
-
-// 定义设置鼠标滚轮状态的函数
-XLIB void set_wheel_status(int s) { 
-  wheel_status = s;  // 设置全局变量wheel_status的值
+XLIB UINT get_num() {
+    return fileCount;  // 返回dragfiles字符串，即拖拽文件的路径
 }
-
-// 定义获取鼠标滚轮状态的函数
-XLIB int get_wheel_status() { 
-  return wheel_status;  // 返回当前的鼠标滚轮状态
+XLIB WCHAR **get_globalFileList() {
+    return globalFileList;  // 返回dragfiles字符串，即拖拽文件的路径
 }
 
 // 定义设置钩子的函数
 XLIB void set_hook(bool set) {
   // 使用GH宏创建PeekMessageW和DragQueryFileW函数的hook
-  static auto pmsgwdetour = GH(PeekMessageW);
+//  static auto pmsgwdetour = GH(PeekMessageW);
   static auto dqfwhook = GH(DragQueryFileW);
 
   // 根据set参数的值，安装或卸载钩子
   if (set) {
-    pmsgwdetour.hook();  // 安装PeekMessageW钩子
+//    pmsgwdetour.hook();  // 安装PeekMessageW钩子
     dqfwhook.hook();     // 安装DragQueryFileW钩子
   } else {
-    pmsgwdetour.unHook();  // 卸载PeekMessageW钩子
+//    pmsgwdetour.unHook();  // 卸载PeekMessageW钩子
     dqfwhook.unHook();     // 卸载DragQueryFileW钩子
   }
 }

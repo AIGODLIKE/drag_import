@@ -1,5 +1,6 @@
 from . import hook
 from . import timer
+
 bl_info = {
     "name": "My Drag and Drop Plugin",
     "description": "Handles drag and drop files into Blender.",
@@ -7,7 +8,7 @@ bl_info = {
     "version": (1, 0),
     "blender": (2, 80, 0),
     "location": "View3D > Tool Shelf",
-    "warning": "", # used for warning icon and text in addons panel
+    "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "category": "Import-Export"
 }
@@ -23,10 +24,13 @@ import bpy
 #     # func = func_queue.get()  # 这将阻塞直到队列中有数据
 #     # func()
 from io_scene_fbx import ImportFBX
+
+
 class Dragpanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Item"
+
     @classmethod
     def poll(cls, context):
         return True
@@ -38,16 +42,31 @@ class Dragpanel(bpy.types.Panel):
         layout = self.layout
         label = layout.label(text="Drag and Drop Files Here")
         layout.prop(ImportFBX, "global_scale")
-classes=[
-Dragpanel,
+
+
+classes = [
+    Dragpanel,
 ]
+from .format import fbx, gltf, dae, obj,abc,usd,ply,stl,x3d,bvh,svg
+
+
 def register():
     # Register handlers, UI elements, etc.
     # bpy.utils.register_class(...)Dragpanel
     from bpy.utils import register_class
     for c in classes:
         register_class(c)
-    pass
+    fbx.register()
+    gltf.register()
+    dae.register()
+    obj.register()
+    abc.register()
+    usd.register()
+    ply.register()
+    stl.register()
+    x3d.register()
+    bvh.register()
+    svg.register()
     timer.timer_reg()
     t = hook.Thread(target=hook.track, daemon=True)
     t.start()
@@ -59,8 +78,10 @@ def unregister():
     from bpy.utils import unregister_class
     for c in classes:
         unregister_class(c)
-    pass
+    fbx.unregister()
+    gltf.unregister()
     timer.timer_unreg()
+
 
 if __name__ == "__main__":
     register()

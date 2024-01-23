@@ -15,9 +15,9 @@ from bpy_extras.io_utils import (
 
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
-class Fbx_preferences(bpy.types.Operator, ImportHelper):
+class Drag_import_fbx(bpy.types.Operator):
     """Load a FBX file"""
-    bl_idname = "import_scene.fbx"
+    bl_idname = "drag_imort.fbx"
     bl_label = "Import FBX"
     bl_options = {'UNDO', 'PRESET'}
 
@@ -26,9 +26,8 @@ class Fbx_preferences(bpy.types.Operator, ImportHelper):
     filename_ext = ".fbx"
     filter_glob: StringProperty(default="*.fbx", options={'HIDDEN'})
 
-    files: CollectionProperty(
+    filepath: StringProperty(
             name="File Path",
-            type=bpy.types.OperatorFileListElement,
             )
 
     ui_tab: EnumProperty(
@@ -167,21 +166,21 @@ class Fbx_preferences(bpy.types.Operator, ImportHelper):
         pass
 
     def execute(self, context):
-        keywords = self.as_keywords(ignore=("filter_glob", "directory", "ui_tab", "filepath", "files"))
+        keywords = self.as_keywords(ignore=("filter_glob", "directory", "ui_tab", "filepath",))
 
-        from . import import_fbx
+        # from . import import_fbx
         import os
-
-        if self.files:
+        print('path',self.filepath)
+        if self.filepath:
             ret = {'CANCELLED'}
-            dirname = os.path.dirname(self.filepath)
-            for file in self.files:
-                path = os.path.join(dirname, file.name)
-                if import_fbx.load(self, context, filepath=path, **keywords) == {'FINISHED'}:
+            # dirname = os.path.dirname(self.filepath)
+            # for file in self.filepath:
+                # path = os.path.join(dirname, file.name)
+                # if import_fbx.load(self, context, filepath=path, **keywords) == {'FINISHED'}:
+            if bpy.ops.import_scene.fbx(filepath=self.filepath, **keywords) == {'FINISHED'}:
                     ret = {'FINISHED'}
             return ret
-        else:
-            return import_fbx.load(self, context, filepath=self.filepath, **keywords)
+
 
 
 class FBX_PT_import_include(bpy.types.Panel):
@@ -340,3 +339,21 @@ class FBX_PT_import_armature(bpy.types.Panel):
         sub.enabled = not operator.automatic_bone_orientation
         sub.prop(operator, "primary_bone_axis")
         sub.prop(operator, "secondary_bone_axis")
+classes=[
+    Drag_import_fbx,
+]
+def register():
+
+    from bpy.utils import register_class
+    for c in classes:
+        register_class(c)
+    pass
+
+
+
+def unregister():
+
+    from bpy.utils import unregister_class
+    for c in classes:
+        unregister_class(c)
+    pass
