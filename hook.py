@@ -144,14 +144,11 @@ CACHED_DPFILES: list[Path] = []  # 声明一个名为CACHED_DPFILES的变量，�
 
 一个线程（t）在后台持续运行track函数。这个函数似乎在间隔时间检查拖拽的文件并更新一个缓存文件列表（CACHED_DPFILES）。当检测到新文件时，它准备在Blender节点编辑器中显示一个弹出菜单以导入文件。'''
 
-
 def track():  # 定义一个名为track的函数
     while True:  # 创建一个无限循环
         sleep(1 / 30)  # 每次循环暂停约1/30秒
         drag_file = get_dragfiles()  # 获取当前拖拽的文件
         num = get_num()  # 获取当前拖拽的文件
-        # get_globalFileList()  # 获取当前拖拽的文件
-
         if not drag_file:  # 如果没有拖拽文件，则继续下一次循环
             continue
         drag_file = Path(drag_file)  # 将拖拽的文件路径转换为Path对象
@@ -171,11 +168,14 @@ def track():  # 定义一个名为track的函数
 
 
         def file_open():
+
             print('f')
             filelist=get_globalFileList()
             current_thread = threading.current_thread()
             # 打印当前线程的名称
             print(f"Function is running in thread: {current_thread.name}")
+
+
             if os.path.isdir(drag_file):
                 def popup_menu():
                     print('draw menu')
@@ -187,16 +187,15 @@ def track():  # 定义一个名为track的函数
 
                     bpy.context.window_manager.popup_menu(draw, title="")
             for f in filelist:
+                def draw(self, context):
+
+                    self.layout.label(text=f'{str(f)}')
+
+                # bpy.context.window_manager.popup_menu(draw)
                 print(f'检测后缀:{f.suffix.lower()}',f)
                 if f.suffix.lower()== '.fbx':
-                    bpy.ops.drag_imort.fbx(filepath=str(f), directory="", filter_glob="*.fbx", ui_tab='MAIN',
-                                           use_manual_orientation=False, global_scale=1, bake_space_transform=False,
-                                           use_custom_normals=True, colors_type='SRGB', use_image_search=True,
-                                           use_alpha_decals=False, decal_offset=0, use_anim=True, anim_offset=1,
-                                           use_subsurf=False, use_custom_props=True, use_custom_props_enum_as_string=True,
-                                           ignore_leaf_bones=False, force_connect_children=False,
-                                           automatic_bone_orientation=False, primary_bone_axis='Y', secondary_bone_axis='X',
-                                           use_prepost_rot=True, axis_forward='-Z', axis_up='Y')
+                    bpy.ops.drag_import.fbx('INVOKE_DEFAULT',filepath=str(f))
+                    # bpy.ops.drag_import.fbx(filepath=str(f))
                 elif f.suffix.lower()== '.obj':
                     bpy.ops.drag_import.obj(filepath=str(f))
                 elif f.suffix.lower() in ['.glb','.gltf']:
@@ -210,27 +209,34 @@ def track():  # 定义一个名为track的函数
                 elif f.suffix.lower() =='.svg':
                     bpy.ops.drag_import.svg(filepath=str(f))
                 elif f.suffix.lower() =='.ply':
+                    try:
+                        for o in bpy.context.scene.objects:
+                            name=o.data.name
+                            if o.type=='EMPTY' and o.data.name==os.path.basename(f):
+                                bpy.data.objects.remove(o)
+                                bpy.data.images.remove(bpy.data.images[name])
+                                break
+                    except:
+                        pass
                     bpy.ops.drag_import.ply(filepath=str(f))
                 elif f.suffix.lower() =='.stl':
                     bpy.ops.drag_import.stl(filepath=str(f))
                 elif f.suffix.lower() =='.bvh':
-                    for o in bpy.context.scene.objects:
-                        name=o.data.name
-                        if o.type=='EMPTY' and o.data.name==os.path.basename(f):
-                            bpy.data.objects.remove(o)
-                            bpy.data.images.remove(bpy.data.images[name])
-                            break
+
                     bpy.ops.drag_import.bvh(filepath=str(f))
 
                 elif f.suffix.lower() =='.vrm':
                     pass
                 elif f.suffix.lower() in ['.x3d','.wrl']:
-                    for o in bpy.context.scene.objects:
-                        name=o.data.name
-                        if o.type=='EMPTY' and o.data.name==os.path.basename(f):
-                            bpy.data.objects.remove(o)
-                            bpy.data.images.remove(bpy.data.images[name])
-                            break
+                    try:
+                        for o in bpy.context.scene.objects:
+                            name=o.data.name
+                            if o.type=='EMPTY' and o.data.name==os.path.basename(f):
+                                bpy.data.objects.remove(o)
+                                bpy.data.images.remove(bpy.data.images[name])
+                                break
+                    except:
+                        pass
                     bpy.ops.drag_import.x3d(filepath=str(f))
 
                 # elif f.suffix.lower() in ['glb','gltf']:
