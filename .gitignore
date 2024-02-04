@@ -3,3 +3,7 @@ __pycache__/
 .idea/
 cmake-build-debug/
 .hook2.dll/
+cmake-build-minsizerel/
+.vs/
+out/
+drag_import.zip

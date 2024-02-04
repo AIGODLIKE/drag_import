@@ -60,7 +60,7 @@ def unregister():
         Drag_import_zh_HANS.unregister()
     reg.unregister()
     timer.timer_unreg()
-    from hook import my_dll_wrapper
+    from .hook import my_dll_wrapper
     del my_dll_wrapper
 
 if __name__ == "__main__":
