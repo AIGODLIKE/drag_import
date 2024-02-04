@@ -49,7 +49,6 @@ def register():
     reg.register()
     timer.timer_reg()
     t = threading.Thread(target=hook.track, daemon=True)
-    # t = hook.Thread(target=hook.track, daemon=True)
     t.start()
 
 
@@ -61,7 +60,8 @@ def unregister():
         Drag_import_zh_HANS.unregister()
     reg.unregister()
     timer.timer_unreg()
-
+    from hook import my_dll_wrapper
+    del my_dll_wrapper
 
 if __name__ == "__main__":
     register()
