@@ -7,7 +7,7 @@ from bpy.props import (
     StringProperty,
 
 )
-
+from  ..prop import drag_import_prop
 
 class drag_import_usd_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
@@ -113,13 +113,13 @@ class drag_import_usd_prop(bpy.types.PropertyGroup):
         default=True
     )
     set_frame_range: BoolProperty(
-        name='set_frame_range',
-        description='',
+        name='set frame range',
+        description="Update the scene's start and end frame to match those of the USD archive",
         default=True
     )
     relative_path: BoolProperty(
-        name='relative_path',
-        description='',
+        name='relative path',
+        description="Select the file relative to the blend file",
         default=True
     )
     create_collection: BoolProperty(
@@ -183,41 +183,67 @@ class drag_import_usd_prop(bpy.types.PropertyGroup):
     )
 
 
-# class Drag_import_usd_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "usd_panel"
-#     bl_idname = "usdECT_PT_import_usd"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_usd_prop = context.scene.drag_import_usd_prop
-#
-#         layout.prop(drag_import_usd_prop, "global_scale")
-#         layout.prop(drag_import_usd_prop, "clamp_size")
-#         layout.prop(drag_import_usd_prop, "forward_axis")
-#         layout.prop(drag_import_usd_prop, "up_axis")
-#         layout.prop(drag_import_usd_prop, "use_split_usdects")
-#         layout.prop(drag_import_usd_prop, "use_split_groups")
-#         layout.prop(drag_import_usd_prop, "import_vertex_groups")
-#         layout.prop(drag_import_usd_prop, "validate_meshes")
 
-
-class Drag_import_usd(bpy.types.Operator, drag_import_usd_prop):
+class Drag_import_usd(bpy.types.Operator, drag_import_usd_prop,drag_import_prop):
     """Load a usd file"""
     bl_idname = 'drag_import.usd'
     bl_label = 'Import usd'
-    bl_options = {'REGISTER', 'UNDO'}
-
+    bl_options = {'REGISTER','PRESET','UNDO'}
+    def draw(self, context):
+        types = self.layout.box()
+        prop = context.scene.drag_import_usd_prop
+        types.prop(prop, "import_cameras")
+        types.prop(prop, "import_curves")
+        types.prop(prop, "import_lights")
+        types.prop(prop, "import_materials")
+        types.prop(prop, "import_meshes")
+        types.prop(prop, "import_volumes")
+        types.prop(prop, "import_shapes")
+        if bpy.app.version>=(4,0,0):
+            types.prop(prop, "import_skeletons")
+            types.prop(prop, "import_blendshapes")
+        types.prop(prop, "prim_path_mask")
+        types.prop(prop, "scale")
+        mesh=self.layout.box()
+        mesh.prop(prop, "read_mesh_uvs")
+        mesh.prop(prop, "read_mesh_colors")
+        if bpy.app.version>=(4,0,0):
+            mesh.prop(prop, "read_mesh_attributes")
+        mesh.prop(prop, "import_subdiv")
+        mesh.prop(prop, "import_instance_proxies")
+        mesh.prop(prop, "import_visible_only")
+        mesh.prop(prop, "import_guide")
+        mesh.prop(prop, "import_proxy")
+        mesh.prop(prop, "import_render")
+        mesh.prop(prop, "set_frame_range")
+        mesh.prop(prop, "relative_path")
+        mesh.prop(prop, "create_collection")
+        mesh.prop(prop, "light_intensity_scale")
+        mat=self.layout.box()
+        mat.prop(prop, "import_all_materials")
+        mat.prop(prop, "import_usd_preview")
+        mat.prop(prop, "set_material_blend")
+        mat.prop(prop, "mtl_name_collision_mode")
+        textures=self.layout.box()
+        textures.prop(prop, "import_textures_mode")
+        textures.prop(prop, "import_textures_dir")
+        textures.prop(prop, "tex_name_collision_mode")
+    def invoke(self, context, event):
+        # 弹出菜单
+        # return context.window_manager.invoke_props_dialog(self)
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
-        ret = {'CANCELLED'}
         self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath',))
-
-        if bpy.ops.wm.usd_import(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        if bpy.app.version>=(4,0,0):
+            keywords = self.as_keywords(ignore=('filepath','files','pop_menu'))
+        else:
+            keywords = self.as_keywords(ignore=('filepath','files','pop_menu','import_skeletons','import_blendshapes','read_mesh_attributes'))
+        for f in self.files:
+            bpy.ops.wm.usd_import(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
         # return self.import_usd(context)

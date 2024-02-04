@@ -7,7 +7,7 @@ from bpy.props import (
     StringProperty,
 
 )
-
+from  ..prop import drag_import_prop
 
 class drag_import_stl_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
@@ -55,46 +55,37 @@ class drag_import_stl_prop(bpy.types.PropertyGroup):
         default=False,
     )
 
-
-
-# class Drag_import_stl_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "stl_panel"
-#     bl_idname = "stlECT_PT_import_stl"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_stl_prop = context.scene.drag_import_stl_prop
-#
-#         layout.prop(drag_import_stl_prop, "global_scale")
-#         layout.prop(drag_import_stl_prop, "clamp_size")
-#         layout.prop(drag_import_stl_prop, "forward_axis")
-#         layout.prop(drag_import_stl_prop, "up_axis")
-#         layout.prop(drag_import_stl_prop, "use_split_stlects")
-#         layout.prop(drag_import_stl_prop, "use_split_groups")
-#         layout.prop(drag_import_stl_prop, "import_vertex_groups")
-#         layout.prop(drag_import_stl_prop, "validate_meshes")
-
-
-class Drag_import_stl(bpy.types.Operator, drag_import_stl_prop):
+class Drag_import_stl(bpy.types.Operator, drag_import_stl_prop,drag_import_prop):
     """Load a stl file"""
     bl_idname = 'drag_import.stl'
     bl_label = 'Import stl'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER','PRESET','UNDO'}
+    def draw(self, context):
 
+        prop = context.scene.drag_import_stl_prop
+        trans = self.layout.box()
+        trans.label(text='Transform')
+        trans.prop(prop, "global_scale")
+        trans.prop(prop, "use_scene_unit")
+        trans.prop(prop, "axis_forward")
+        trans.prop(prop, "axis_up")
+        geom = self.layout.box()
+        geom.label(text='Geometry')
+        geom.prop(prop, "use_facet_normal")
+
+    def invoke(self, context, event):
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
-        ret = {'CANCELLED'}
         self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath',))
-
-        if bpy.ops.import_mesh.stl(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        keywords = self.as_keywords(ignore=('filepath','pop_menu','files',))
+        for f in self.files:
+            bpy.ops.import_mesh.stl(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
-        # return self.import_stl(context)
 
     def set_parameter(self, context):
         prop = context.scene.drag_import_stl_prop

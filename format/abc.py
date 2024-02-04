@@ -13,19 +13,19 @@ class drag_import_abc_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
 
     scale: FloatProperty(
-        name='scale',
-        description='',
+        name='Scale',
+        description="Value by which to enlarge or shrink the objects with respect to the world's origin",
         default=1.0
     )
 
     relative_path: BoolProperty(
-        name='relative_path',
+        name='Relative Path',
         description='',
         default=True
     )
     set_frame_range: BoolProperty(
-        name='set_frame_range',
-        description='',
+        name='Set Frame Range',
+        description="Update the scene's start and end frame to match those of the abc archive",
         default=True
     )
     is_sequence: BoolProperty(
@@ -45,53 +45,52 @@ class drag_import_abc_prop(bpy.types.PropertyGroup):
     )
 
 
-# class Drag_import_abc_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "abc_panel"
-#     bl_idname = "abcECT_PT_import_abc"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_abc_prop = context.scene.drag_import_abc_prop
-#
-#         layout.prop(drag_import_abc_prop, "global_scale")
-#         layout.prop(drag_import_abc_prop, "clamp_size")
-#         layout.prop(drag_import_abc_prop, "forward_axis")
-#         layout.prop(drag_import_abc_prop, "up_axis")
-#         layout.prop(drag_import_abc_prop, "use_split_abcects")
-#         layout.prop(drag_import_abc_prop, "use_split_groups")
-#         layout.prop(drag_import_abc_prop, "import_vertex_groups")
-#         layout.prop(drag_import_abc_prop, "validate_meshes")
 
-
-class Drag_import_abc(bpy.types.Operator, drag_import_abc_prop):
+from ..prop import drag_import_prop
+class Drag_import_abc(bpy.types.Operator, drag_import_abc_prop,drag_import_prop):
     """Load a abc file"""
     bl_idname = 'drag_import.abc'
     bl_label = 'Import abc'
     bl_options = {'REGISTER', 'UNDO'}
+    def draw(self, context):
+        layout = self.layout.box()
+        prop = context.scene.drag_import_abc_prop
+        layout.label(text='Manual Transform')
+        layout.prop(prop, "scale")
+        option=self.layout.box()
+        option.label(text='Options')
+        option.prop(prop, "relative_path")
+        option.prop(prop, "set_frame_range")
+        option.prop(prop, "is_sequence")
+        option.prop(prop, "validate_meshes")
+        option.prop(prop, "always_add_cache_reader")
 
+    def invoke(self, context, event):
+        # 弹出菜单
+        # return context.window_manager.invoke_props_dialog(self)
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
         ret = {'CANCELLED'}
-        self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath',))
-
-        if bpy.ops.wm.alembic_import(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        # self.set_parameter(context)
+        keywords = self.as_keywords(ignore=('filepath','pop_menu','files'))
+        for f in self.files:
+            bpy.ops.wm.alembic_import(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
         # return self.import_abc(context)
 
-    def set_parameter(self, context):
-        prop = context.scene.drag_import_abc_prop
-        self.scale = prop.scale
-        self.relative_path = prop.relative_path
-        self.set_frame_range = prop.set_frame_range
-        self.is_sequence = prop.is_sequence
-        self.validate_meshes = prop.validate_meshes
-        self.always_add_cache_reader = prop.always_add_cache_reader
+    # def set_parameter(self, context):
+    #     prop = context.scene.prop
+    #     self.scale = prop.scale
+    #     self.relative_path = prop.relative_path
+    #     self.set_frame_range = prop.set_frame_range
+    #     self.is_sequence = prop.is_sequence
+    #     self.validate_meshes = prop.validate_meshes
+    #     self.always_add_cache_reader = prop.always_add_cache_reader
 
 
 def register():

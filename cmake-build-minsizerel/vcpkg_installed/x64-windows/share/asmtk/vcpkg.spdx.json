@@ -1,0 +1,132 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.1/schemas/spdx-schema.json",
+  "spdxVersion": "SPDX-2.2",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "https://spdx.org/spdxdocs/asmtk-x64-windows-2022-11-06#1-6a25333b-e88d-4e67-a932-be07d058c2c8",
+  "name": "asmtk:x64-windows@2022-11-06#1 5ba786d6df00f50f7f9a78f8d81d80083210747fd2a7a372eaa2eab54ad42f84",
+  "creationInfo": {
+    "creators": [
+      "Tool: vcpkg-710a3116bbd615864eef5f9010af178034cb9b44"
+    ],
+    "created": "2024-01-20T14:44:32Z"
+  },
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "GENERATES",
+      "relatedSpdxElement": "SPDXRef-binary"
+    },
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-file-0"
+    },
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-file-1"
+    },
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-file-2"
+    },
+    {
+      "spdxElementId": "SPDXRef-binary",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-port"
+    },
+    {
+      "spdxElementId": "SPDXRef-file-0",
+      "relationshipType": "CONTAINED_BY",
+      "relatedSpdxElement": "SPDXRef-port"
+    },
+    {
+      "spdxElementId": "SPDXRef-file-1",
+      "relationshipType": "CONTAINED_BY",
+      "relatedSpdxElement": "SPDXRef-port"
+    },
+    {
+      "spdxElementId": "SPDXRef-file-2",
+      "relationshipType": "CONTAINED_BY",
+      "relatedSpdxElement": "SPDXRef-port"
+    }
+  ],
+  "packages": [
+    {
+      "name": "asmtk",
+      "SPDXID": "SPDXRef-port",
+      "versionInfo": "2022-11-06#1",
+      "downloadLocation": "git+https://github.com/Microsoft/vcpkg#ports/asmtk",
+      "homepage": "https://github.com/asmjit/asmtk",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "description": "Assembler toolkit based on AsmJit ",
+      "comment": "This is the port (recipe) consumed by vcpkg."
+    },
+    {
+      "name": "asmtk:x64-windows",
+      "SPDXID": "SPDXRef-binary",
+      "versionInfo": "5ba786d6df00f50f7f9a78f8d81d80083210747fd2a7a372eaa2eab54ad42f84",
+      "downloadLocation": "NONE",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "comment": "This is a binary package built by vcpkg."
+    },
+    {
+      "SPDXID": "SPDXRef-resource-1",
+      "name": "asmjit/asmtk",
+      "downloadLocation": "git+https://github.com/asmjit/asmtk@425b108d3afe510f8b94ca5523cd31ae29381422",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "d825f488c66dca9ca4c3279992e4ea36a4d1b7ad65fa3e0c70b151ce0d2b1f9b5ad053ff1d447da38475bf843fe3b130706e3c9916a64f76560add9c8d796a5b"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "fileName": "./G:/work/002code/vcpkg/ports/asmtk/fix-link-amsjit.patch",
+      "SPDXID": "SPDXRef-file-0",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d9ec12e2ac018918b3785d31076ed0b1fe07e1864e7140b60f1ff76a98941bf2"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./G:/work/002code/vcpkg/ports/asmtk/portfile.cmake",
+      "SPDXID": "SPDXRef-file-1",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9b4a0b89d200a0f047c2c43add01c675408089837d8abcd723e315cb56f3a828"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./G:/work/002code/vcpkg/ports/asmtk/vcpkg.json",
+      "SPDXID": "SPDXRef-file-2",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7dc4aad1946e92dfcd33dc800f94bce4b2b729fac0ea8e8e979d5aaf1265699f"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    }
+  ]
+}

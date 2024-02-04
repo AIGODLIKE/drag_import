@@ -1,0 +1,132 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.1/schemas/spdx-schema.json",
+  "spdxVersion": "SPDX-2.2",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "documentNamespace": "https://spdx.org/spdxdocs/polyhook2-x64-windows-2023-08-11-2f4ef9bc-1934-4abb-9ec4-534c00631857",
+  "name": "polyhook2:x64-windows@2023-08-11 d829e9ef2a808bf38857c2cc0ba4196aabe7ca24baa45713243df9cba9c931d8",
+  "creationInfo": {
+    "creators": [
+      "Tool: vcpkg-710a3116bbd615864eef5f9010af178034cb9b44"
+    ],
+    "created": "2024-01-20T14:44:51Z"
+  },
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "GENERATES",
+      "relatedSpdxElement": "SPDXRef-binary"
+    },
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-file-0"
+    },
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-file-1"
+    },
+    {
+      "spdxElementId": "SPDXRef-port",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-file-2"
+    },
+    {
+      "spdxElementId": "SPDXRef-binary",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-port"
+    },
+    {
+      "spdxElementId": "SPDXRef-file-0",
+      "relationshipType": "CONTAINED_BY",
+      "relatedSpdxElement": "SPDXRef-port"
+    },
+    {
+      "spdxElementId": "SPDXRef-file-1",
+      "relationshipType": "CONTAINED_BY",
+      "relatedSpdxElement": "SPDXRef-port"
+    },
+    {
+      "spdxElementId": "SPDXRef-file-2",
+      "relationshipType": "CONTAINED_BY",
+      "relatedSpdxElement": "SPDXRef-port"
+    }
+  ],
+  "packages": [
+    {
+      "name": "polyhook2",
+      "SPDXID": "SPDXRef-port",
+      "versionInfo": "2023-08-11",
+      "downloadLocation": "git+https://github.com/Microsoft/vcpkg#ports/polyhook2",
+      "homepage": "https://github.com/stevemk14ebr/PolyHook_2_0",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "description": "C++17, x86/x64 Hooking Library v2.0",
+      "comment": "This is the port (recipe) consumed by vcpkg."
+    },
+    {
+      "name": "polyhook2:x64-windows",
+      "SPDXID": "SPDXRef-binary",
+      "versionInfo": "d829e9ef2a808bf38857c2cc0ba4196aabe7ca24baa45713243df9cba9c931d8",
+      "downloadLocation": "NONE",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "comment": "This is a binary package built by vcpkg."
+    },
+    {
+      "SPDXID": "SPDXRef-resource-1",
+      "name": "stevemk14ebr/PolyHook_2_0",
+      "downloadLocation": "git+https://github.com/stevemk14ebr/PolyHook_2_0@71553ebf0d197e73c49365cc3ab2a6aa326b3c37",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA512",
+          "checksumValue": "f8daaa0307f07990b10a6487e1b0f2719e7442fcaeff5878eae9c22a741f27b1dfa7a292b91dcf7e2039029dd7dce71083ab2288e9d84de1bc20be7567a858c8"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "fileName": "./G:/work/002code/vcpkg/ports/polyhook2/fix-dep.patch",
+      "SPDXID": "SPDXRef-file-0",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "5cbcf0fa37bb9ede77aeb4374ff316efe4dd7e78a1c3238c751f2fb54780dad3"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./G:/work/002code/vcpkg/ports/polyhook2/portfile.cmake",
+      "SPDXID": "SPDXRef-file-1",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c84da0378e471ab9796783b044dc283b0e6d0bc5a6d71b25d26065cf6dc10d4a"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "./G:/work/002code/vcpkg/ports/polyhook2/vcpkg.json",
+      "SPDXID": "SPDXRef-file-2",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8d305666bb5128d6345cc542da1a4cd6f806d976672e9dde62070cc113eb1ce8"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    }
+  ]
+}

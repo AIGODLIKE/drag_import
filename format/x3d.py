@@ -7,7 +7,7 @@ from bpy.props import (
     StringProperty,
 
 )
-
+from  ..prop import drag_import_prop
 
 class drag_import_x3d_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
@@ -42,41 +42,32 @@ class drag_import_x3d_prop(bpy.types.PropertyGroup):
 
 
 
-# class Drag_import_x3d_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "x3d_panel"
-#     bl_idname = "x3dECT_PT_import_x3d"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_x3d_prop = context.scene.drag_import_x3d_prop
-#
-#         layout.prop(drag_import_x3d_prop, "global_scale")
-#         layout.prop(drag_import_x3d_prop, "clamp_size")
-#         layout.prop(drag_import_x3d_prop, "forward_axis")
-#         layout.prop(drag_import_x3d_prop, "up_axis")
-#         layout.prop(drag_import_x3d_prop, "use_split_x3dects")
-#         layout.prop(drag_import_x3d_prop, "use_split_groups")
-#         layout.prop(drag_import_x3d_prop, "import_vertex_groups")
-#         layout.prop(drag_import_x3d_prop, "validate_meshes")
-
-
-class Drag_import_x3d(bpy.types.Operator, drag_import_x3d_prop):
+class Drag_import_x3d(bpy.types.Operator, drag_import_x3d_prop,drag_import_prop):
     """Load a x3d file"""
     bl_idname = 'drag_import.x3d'
     bl_label = 'Import x3d'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER','PRESET','UNDO'}
+    def draw(self, context):
+        layout = self.layout.box()
+        prop = context.scene.drag_import_x3d_prop
+        layout.label(text='Transform')
+        layout.prop(prop, "axis_forward")
+        layout.prop(prop, "axis_up")
 
+
+    def invoke(self, context, event):
+        # 弹出菜单
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
         ret = {'CANCELLED'}
         self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath',))
-
-        if bpy.ops.import_scene.x3d(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        keywords = self.as_keywords(ignore=('filepath','files','pop_menu'))
+        for f in self.files:
+            bpy.ops.import_scene.x3d(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
         # return self.import_x3d(context)

@@ -1,3 +1,5 @@
+import os
+
 import bpy
 from bpy.props import (
     BoolProperty,
@@ -7,7 +9,7 @@ from bpy.props import (
     StringProperty,
 
 )
-
+from  ..prop import drag_import_prop
 
 class drag_import_svg_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
@@ -29,41 +31,37 @@ class drag_import_svg_prop(bpy.types.PropertyGroup):
 
 
 
-# class Drag_import_svg_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "svg_panel"
-#     bl_idname = "svgECT_PT_import_svg"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_svg_prop = context.scene.drag_import_svg_prop
-#
-#         layout.prop(drag_import_svg_prop, "global_scale")
-#         layout.prop(drag_import_svg_prop, "clamp_size")
-#         layout.prop(drag_import_svg_prop, "forward_axis")
-#         layout.prop(drag_import_svg_prop, "up_axis")
-#         layout.prop(drag_import_svg_prop, "use_split_svgects")
-#         layout.prop(drag_import_svg_prop, "use_split_groups")
-#         layout.prop(drag_import_svg_prop, "import_vertex_groups")
-#         layout.prop(drag_import_svg_prop, "validate_meshes")
-
-
-class Drag_import_svg(bpy.types.Operator, drag_import_svg_prop):
+class Drag_import_svg(bpy.types.Operator, drag_import_svg_prop,drag_import_prop):
     """Load a svg file"""
     bl_idname = 'drag_import.svg'
     bl_label = 'Import svg'
-    bl_options = {'REGISTER', 'UNDO'}
-
+    bl_options = {'REGISTER','PRESET','UNDO'}
+    def draw(self, context):
+        prop = context.scene.drag_import_svg_prop
+        option=self.layout.box()
+        option.prop(prop, "resolution")
+        option.prop(prop, "scale")
+    def invoke(self, context, event):
+        # 弹出菜单
+        # return context.window_manager.invoke_props_dialog(self)
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
         ret = {'CANCELLED'}
         self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath','resolution','scale'))
 
-        if bpy.ops.import_curve.svg(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        if self.pop_menu:
+            keywords = self.as_keywords(ignore=('filepath','files','pop_menu',))
+            for f in self.files:
+                bpy.ops.wm.gpencil_import_svg(directory=os.path.dirname(f.name), filepath="", files=[{"name": os.path.basename(f.name)}],**keywords)
+
+        else:
+            keywords = self.as_keywords(ignore=('filepath','files','pop_menu','resolution','scale'))
+            for f in self.files:
+                bpy.ops.import_curve.svg(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
         # return self.import_svg(context)

@@ -7,7 +7,6 @@
 //#include "ole2.h"
 #include "polyhook2/Detour/NatDetour.hpp"
 #include "polyhook2/IHook.hpp"
-//#include "spdlog/logger.h"
 
 // 定义GH宏，用于创建钩子
 #define GH(f) PLH::NatDetour((uint64_t)&f, (uint64_t)h##f, &h##f##Tramp)

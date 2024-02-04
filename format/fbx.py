@@ -12,7 +12,7 @@ from bpy_extras.io_utils import (
         orientation_helper,
         axis_conversion,
         )
-
+from ..prop import drag_import_prop
 class drag_import_fbx_prop(bpy.types.PropertyGroup):
     filter_glob: StringProperty(default="*.fbx", options={'HIDDEN'})
 
@@ -37,12 +37,31 @@ class drag_import_fbx_prop(bpy.types.PropertyGroup):
         description="Specify orientation and scale, instead of using embedded data in FBX file",
         default=False,
     )
-
+    axis_forward: EnumProperty(
+        name="Forward Axis",
+        items=(('X', "X Axis", ""),
+               ('Y', "Y Axis", ""),
+               ('Z', "Z Axis", ""),
+               ('-X', "-X Axis", ""),
+               ('-Y', "-Y Axis", ""),
+               ('-Z', "-Z Axis", ""),
+               ),
+        default='-Z',
+    )
+    axis_up: EnumProperty(
+        name="Up Axis",
+        items=(('X', "X Axis", ""),
+               ('Y', "Y Axis", ""),
+               ('Z', "Z Axis", ""),
+               ('-X', "-X Axis", ""),
+               ('-Y', "-Y Axis", ""),
+               ('-Z', "-Z Axis", ""),
+               ),
+        default='Y',
+    )
     bake_space_transform: BoolProperty(
         name="Apply Transform",
-        description="Bake space transform into object data, avoids getting unwanted rotations to objects when "
-                    "target space is not aligned with Blender's space "
-                    "(WARNING! experimental option, use at own risk, known to be broken with armatures/animations)",
+        description="Bake space transform into object data, avoids getting unwanted rotations to objects when target space is not aligned with Blender's space (WARNING! experimental option, use at own risk, known to be broken with armatures/animations)",
         default=False,
     )
 
@@ -114,8 +133,7 @@ class drag_import_fbx_prop(bpy.types.PropertyGroup):
     )
     force_connect_children: BoolProperty(
         name="Force Connect Children",
-        description="Force connection of children bones to their parent, even if their computed head/tail "
-                    "positions do not match (can be useful with pure-joints-type armatures)",
+        description="Force connection of children bones to their parent, even if their computed head/tail positions do not match (can be useful with pure-joints-type armatures)",
         default=False,
     )
     automatic_bone_orientation: BoolProperty(
@@ -151,223 +169,121 @@ class drag_import_fbx_prop(bpy.types.PropertyGroup):
         description="Use pre/post rotation from FBX transform (you may have to disable that in some cases)",
         default=True,
     )
-def draw(cls):
-    layout = cls.layout
-    label = layout.label(text="Drag and Drop Fe")
-    layout.prop(cls, "global_scale")
+
 @orientation_helper(axis_forward='-Z', axis_up='Y')
-class Drag_import_fbx(bpy.types.Operator,drag_import_fbx_prop):
+class Drag_import_fbx(bpy.types.Operator,drag_import_fbx_prop,drag_import_prop):
     """Load a FBX file"""
     bl_idname = "drag_import.fbx"
     bl_label = "Import FBX"
     bl_options = {'UNDO', 'PRESET','REGISTER'}
 
 
+    def draw(self, context):
+        #包括
+        layout = self.layout.box()
+        layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
+        layout.label(text='Include')
+        # sfile = context.space_data
+        # operator = sfile.active_operator
+        prop = context.scene.drag_import_fbx_prop
+        layout.prop(prop, "use_custom_normals")
+        layout.prop(prop, "use_subsurf")
+        layout.prop(prop, "use_custom_props")
+        sub = layout.row()
+        sub.enabled = prop.use_custom_props
+        sub.prop(prop, "use_custom_props_enum_as_string")
+        layout.prop(prop, "use_image_search")
+        layout.prop(prop, "colors_type")
 
+        #变换
+        trans= self.layout.box()
+        trans.label(text='Transform')
+        trans.prop(prop, "global_scale")
+        trans.prop(prop, "decal_offset")
+        row = trans.row()
+        row.prop(prop, "bake_space_transform")
+        row.label(text="", icon='ERROR')
+        trans.prop(prop, "use_prepost_rot")
+        trans.prop(prop, "use_manual_orientation")
+
+        manual_orientation=trans.column()
+
+        manual_orientation.prop(prop, "axis_forward")
+        manual_orientation.prop(prop, "axis_up")
+        manual_orientation.enabled = prop.use_manual_orientation
+        anim=self.layout.box()
+        anim.label(text='Animation')
+        anim.prop(prop, "use_anim",)
+        anim_sub=anim.row()
+        anim_sub.prop(prop, "anim_offset")
+        anim_sub.enabled = prop.use_anim
+        arm=self.layout.box()
+        arm.label(text='Armature')
+        arm.prop(prop, "ignore_leaf_bones")
+        arm.prop(prop, "force_connect_children"),
+        arm.prop(prop, "automatic_bone_orientation"),
+        sub = arm.column()
+        sub.enabled = not prop.automatic_bone_orientation
+        sub.prop(prop, "primary_bone_axis")
+        sub.prop(prop, "secondary_bone_axis")
     def invoke(self, context, event):
         # 弹出菜单
         # return context.window_manager.invoke_props_dialog(self)
-        if event.ctrl:
+        # print('tanchucaidan',self.pop_menu and not self.pop_once)
+        if self.pop_menu:
             return context.window_manager.invoke_props_dialog(self)
         else:
             return self.execute(context)
-    # def set_parameter(self, context):
-    #         prop = context.scene.drag_import_fbx_prop
-    #         self.ui_tab = prop.ui_tab
-    #         self.use_manual_orientation = prop.use_manual_orientation
-    #         self.global_scale = prop.global_scale
-    #         self.bake_space_transform = prop.bake_space_transform
-    #         self.use_custom_normals = prop.use_custom_normals
-    #         self.colors_type = prop.colors_type
-    #         self.use_image_search = prop.use_image_search
-    #         self.use_alpha_decals = prop.use_alpha_decals
-    #         self.decal_offset = prop.decal_offset
-    #         self.use_anim = prop.use_anim
-    #         self.anim_offset = prop.anim_offset
-    #         self.use_subsurf = prop.use_subsurf
-    #         self.use_custom_props = prop.use_custom_props
-    #         self.use_custom_props_enum_as_string = prop.use_custom_props_enum_as_string
-    #         self.ignore_leaf_bones = prop.ignore_leaf_bones
-    #         self.force_connect_children = prop.force_connect_children
-    #         self.automatic_bone_orientation = prop.automatic_bone_orientation
-    #         self.primary_bone_axis = prop.primary_bone_axis
-    #         self.secondary_bone_axis = prop.secondary_bone_axis
-    #         self.use_prepost_rot = prop.use_prepost_rot
+    def set_parameter(self, context):
+        # self.files=bpy.context.scene.drag_import_prop.files
+        from pprint import pprint
+        print('scene prop')
+        pprint(bpy.context.scene.drag_import_prop.files)
+        print('fbx ops')
+        pprint(self.files)
+        prop = context.scene.drag_import_fbx_prop
+        self.ui_tab = prop.ui_tab
+        self.use_manual_orientation = prop.use_manual_orientation
+        self.axis_forward = prop.axis_forward
+        self.axis_up = prop.axis_up
+        self.global_scale = prop.global_scale
+        self.bake_space_transform = prop.bake_space_transform
+        self.use_custom_normals = prop.use_custom_normals
+        self.colors_type = prop.colors_type
+        self.use_image_search = prop.use_image_search
+        self.use_alpha_decals = prop.use_alpha_decals
+        self.decal_offset = prop.decal_offset
+        self.use_anim = prop.use_anim
+        self.anim_offset = prop.anim_offset
+        self.use_subsurf = prop.use_subsurf
+        self.use_custom_props = prop.use_custom_props
+        self.use_custom_props_enum_as_string = prop.use_custom_props_enum_as_string
+        self.ignore_leaf_bones = prop.ignore_leaf_bones
+        self.force_connect_children = prop.force_connect_children
+        self.automatic_bone_orientation = prop.automatic_bone_orientation
+        self.primary_bone_axis = prop.primary_bone_axis
+        self.secondary_bone_axis = prop.secondary_bone_axis
+        self.use_prepost_rot = prop.use_prepost_rot
     def execute(self, context):
-        # self.set_parameter(context)
-        keywords = self.as_keywords(ignore=("filter_glob", "directory", "ui_tab", "filepath",))
 
-        # from . import import_fbx
-        import os
+        self.set_parameter(context)
+        keywords = self.as_keywords(ignore=("filter_glob", "directory", "ui_tab", "filepath","pop_menu",'files'))
+        print('files_fbx:',self.files)
+        for f in self.files:
+            print(f)
         print('path',self.filepath)
-        if self.filepath:
-            ret = {'CANCELLED'}
-            # dirname = os.path.dirname(self.filepath)
-            # for file in self.filepath:
-                # path = os.path.join(dirname, file.name)
-                # if import_fbx.load(self, context, filepath=path, **keywords) == {'FINISHED'}:
-            if bpy.ops.import_scene.fbx(filepath=self.filepath, **keywords) == {'FINISHED'}:
-                    ret = {'FINISHED'}
-            return ret
+
+        ret = {'CANCELLED'}
+
+        from io_scene_fbx import import_fbx
+        for file in self.files:
+            if import_fbx.load(self,context,filepath=file.name, **keywords) == {'FINISHED'}:
+                ret = {'FINISHED'}
+        return ret
 
 
-
-# class FBX_PT_import_include(bpy.types.Panel):
-#     bl_space_type = 'FILE_BROWSER'
-#     bl_region_type = 'TOOL_PROPS'
-#     bl_label = "Include"
-#     bl_parent_id = "FILE_PT_operator"
 #
-#     @classmethod
-#     def poll(cls, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         return operator.bl_idname == "IMPORT_SCENE_OT_fbx"
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         layout.use_property_split = True
-#         layout.use_property_decorate = False  # No animation.
-#
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         layout.prop(operator, "use_custom_normals")
-#         layout.prop(operator, "use_subsurf")
-#         layout.prop(operator, "use_custom_props")
-#         sub = layout.row()
-#         sub.enabled = operator.use_custom_props
-#         sub.prop(operator, "use_custom_props_enum_as_string")
-#         layout.prop(operator, "use_image_search")
-#         layout.prop(operator, "colors_type")
-
-
-# class FBX_PT_import_transform(bpy.types.Panel):
-#     bl_space_type = 'FILE_BROWSER'
-#     bl_region_type = 'TOOL_PROPS'
-#     bl_label = "Transform"
-#     bl_parent_id = "FILE_PT_operator"
-#
-#     @classmethod
-#     def poll(cls, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         return operator.bl_idname == "IMPORT_SCENE_OT_fbx"
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         layout.use_property_split = True
-#         layout.use_property_decorate = False  # No animation.
-#
-#         # sfile = context.space_data
-#         # operator = sfile.active_operator
-#         operator = bpy.ops.import_scene.fbx
-#
-#         layout.prop(operator, "global_scale")
-#         layout.prop(operator, "decal_offset")
-#         row = layout.row()
-#         row.prop(operator, "bake_space_transform")
-#         row.label(text="", icon='ERROR')
-#         layout.prop(operator, "use_prepost_rot")
-#
-#
-# class FBX_PT_import_transform_manual_orientation(bpy.types.Panel):
-#     bl_space_type = 'FILE_BROWSER'
-#     bl_region_type = 'TOOL_PROPS'
-#     bl_label = "Manual Orientation"
-#     bl_parent_id = "FBX_PT_import_transform"
-#
-#     @classmethod
-#     def poll(cls, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         return operator.bl_idname == "IMPORT_SCENE_OT_fbx"
-#
-#     def draw_header(self, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         self.layout.prop(operator, "use_manual_orientation", text="")
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         layout.use_property_split = True
-#         layout.use_property_decorate = False  # No animation.
-#
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         layout.enabled = operator.use_manual_orientation
-#
-#         layout.prop(operator, "axis_forward")
-#         layout.prop(operator, "axis_up")
-#
-#
-# class FBX_PT_import_animation(bpy.types.Panel):
-#     bl_space_type = 'FILE_BROWSER'
-#     bl_region_type = 'TOOL_PROPS'
-#     bl_label = "Animation"
-#     bl_parent_id = "FILE_PT_operator"
-#     bl_options = {'DEFAULT_CLOSED'}
-#
-#     @classmethod
-#     def poll(cls, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         return operator.bl_idname == "IMPORT_SCENE_OT_fbx"
-#
-#     def draw_header(self, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         self.layout.prop(operator, "use_anim", text="")
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         layout.use_property_split = True
-#         layout.use_property_decorate = False  # No animation.
-#
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         layout.enabled = operator.use_anim
-#
-#         layout.prop(operator, "anim_offset")
-#
-#
-# class FBX_PT_import_armature(bpy.types.Panel):
-#     bl_space_type = 'FILE_BROWSER'
-#     bl_region_type = 'TOOL_PROPS'
-#     bl_label = "Armature"
-#     bl_parent_id = "FILE_PT_operator"
-#     bl_options = {'DEFAULT_CLOSED'}
-#
-#     @classmethod
-#     def poll(cls, context):
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         return operator.bl_idname == "IMPORT_SCENE_OT_fbx"
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         layout.use_property_split = True
-#         layout.use_property_decorate = False  # No animation.
-#
-#         sfile = context.space_data
-#         operator = sfile.active_operator
-#
-#         layout.prop(operator, "ignore_leaf_bones")
-#         layout.prop(operator, "force_connect_children"),
-#         layout.prop(operator, "automatic_bone_orientation"),
-#         sub = layout.column()
-#         sub.enabled = not operator.automatic_bone_orientation
-#         sub.prop(operator, "primary_bone_axis")
-#         sub.prop(operator, "secondary_bone_axis")
 # classes=[
 #     Drag_import_fbx,
 # ]

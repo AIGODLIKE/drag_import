@@ -7,7 +7,7 @@ from bpy.props import (
     StringProperty,
 
 )
-
+from ..prop import drag_import_prop
 
 class drag_import_bvh_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
@@ -61,16 +61,14 @@ class drag_import_bvh_prop(bpy.types.PropertyGroup):
     use_fps_scale: BoolProperty(
         name="Scale FPS",
         description=(
-            "Scale the framerate from the BVH to the current scenes, "
-            "otherwise each BVH frame maps directly to a Blender frame"
+            "Scale the framerate from the BVH to the current scenes, otherwise each BVH frame maps directly to a Blender frame"
         ),
         default=False,
     )
     update_scene_fps: BoolProperty(
         name="Update Scene FPS",
         description=(
-            "Set the scene framerate to that of the BVH file (note that this "
-            "nullifies the 'Scale FPS' option, as the scale will be 1:1)"
+            "Set the scene framerate to that of the BVH file (note that this nullifies the 'Scale FPS' option, as the scale will be 1:1)"
         ),
         default=False,
     )
@@ -103,42 +101,43 @@ class drag_import_bvh_prop(bpy.types.PropertyGroup):
     )
 
 
-
-# class Drag_import_bvh_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "bvh_panel"
-#     bl_idname = "bvhECT_PT_import_bvh"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_bvh_prop = context.scene.drag_import_bvh_prop
-#
-#         layout.prop(drag_import_bvh_prop, "global_scale")
-#         layout.prop(drag_import_bvh_prop, "clamp_size")
-#         layout.prop(drag_import_bvh_prop, "forward_axis")
-#         layout.prop(drag_import_bvh_prop, "up_axis")
-#         layout.prop(drag_import_bvh_prop, "use_split_bvhects")
-#         layout.prop(drag_import_bvh_prop, "use_split_groups")
-#         layout.prop(drag_import_bvh_prop, "import_vertex_groups")
-#         layout.prop(drag_import_bvh_prop, "validate_meshes")
-
-
-class Drag_import_bvh(bpy.types.Operator, drag_import_bvh_prop):
+class Drag_import_bvh(bpy.types.Operator, drag_import_bvh_prop,drag_import_prop):
     """Load a bvh file"""
     bl_idname = 'drag_import.bvh'
     bl_label = 'Import bvh'
     bl_options = {'REGISTER', 'UNDO'}
+    def draw(self, context):
+        prop = context.scene.drag_import_bvh_prop
+        self.layout.prop(prop,'target')
+        trans = self.layout.box()
 
+        trans.label(text='Transform')
+        trans.prop(prop, "global_scale")
+        trans.prop(prop, "rotate_mode")
+        trans.prop(prop, "axis_forward")
+        trans.prop(prop, "axis_up")
+        anim = self.layout.box()
+        anim.label(text='Animation')
+        anim.prop(prop, "frame_start")
+        anim.prop(prop, "use_fps_scale")
+        anim.prop(prop, "use_cyclic")
+        anim.prop(prop, "update_scene_fps")
+        anim.prop(prop, "update_scene_duration")
+    def invoke(self, context, event):
+        # 弹出菜单
+        # return context.window_manager.invoke_props_dialog(self)
+        # print('tanchucaidan',self.pop_menu and not self.pop_once)
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
         ret = {'CANCELLED'}
         self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath',))
-
-        if bpy.ops.import_anim.bvh(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        keywords = self.as_keywords(ignore=('filepath','files','pop_menu'))
+        for f in self.files:
+            bpy.ops.import_anim.bvh(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
         # return self.import_bvh(context)

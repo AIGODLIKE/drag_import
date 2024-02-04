@@ -7,7 +7,7 @@ from bpy.props import (
     StringProperty,
 
 )
-
+from  ..prop import drag_import_prop
 
 class drag_import_ply_prop(bpy.types.PropertyGroup):
     filepath: StringProperty()
@@ -66,41 +66,36 @@ class drag_import_ply_prop(bpy.types.PropertyGroup):
     )
 
 
-# class Drag_import_ply_panel(bpy.types.Panel):
-#     """创建一个面板在 N面板中"""
-#     bl_label = "ply_panel"
-#     bl_idname = "plyECT_PT_import_ply"
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = 'Drag_import'  # N面板的标签
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         drag_import_ply_prop = context.scene.drag_import_ply_prop
-#
-#         layout.prop(drag_import_ply_prop, "global_scale")
-#         layout.prop(drag_import_ply_prop, "clamp_size")
-#         layout.prop(drag_import_ply_prop, "forward_axis")
-#         layout.prop(drag_import_ply_prop, "up_axis")
-#         layout.prop(drag_import_ply_prop, "use_split_plyects")
-#         layout.prop(drag_import_ply_prop, "use_split_groups")
-#         layout.prop(drag_import_ply_prop, "import_vertex_groups")
-#         layout.prop(drag_import_ply_prop, "validate_meshes")
 
-
-class Drag_import_ply(bpy.types.Operator, drag_import_ply_prop):
+class Drag_import_ply(bpy.types.Operator, drag_import_ply_prop,drag_import_prop):
     """Load a ply file"""
     bl_idname = 'drag_import.ply'
     bl_label = 'Import ply'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER','PRESET','UNDO'}
+    def draw(self, context):
+        option = self.layout.box()
+        prop = context.scene.drag_import_ply_prop
+        option.prop(prop, "global_scale")
+        option.prop(prop, "use_scene_unit")
+        option.prop(prop, "forward_axis")
+        option.prop(prop, "up_axis")
+        option.prop(prop, "merge_verts")
+        option.prop(prop, "import_colors")
 
+    def invoke(self, context, event):
+        # 弹出菜单
+        # return context.window_manager.invoke_props_dialog(self)
+        if self.pop_menu:
+            return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
     def execute(self, context):
-        ret = {'CANCELLED'}
+        # ret = {'CANCELLED'}
         self.set_parameter(context)
-        keywords = self.as_keywords(ignore=('filepath',))
-
-        if bpy.ops.wm.ply_import(filepath=self.filepath, **keywords) == {'FINISHED'}:
-            ret = {'FINISHED'}
+        keywords = self.as_keywords(ignore=('filepath','files','pop_menu'))
+        for f in self.files:
+            bpy.ops.wm.ply_import(filepath=f.name, **keywords)
+        ret = {'FINISHED'}
         return ret
 
         # return self.import_ply(context)

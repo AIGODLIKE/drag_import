@@ -1,86 +1,65 @@
 from . import hook
 from . import timer
-
+import bpy
 bl_info = {
     "name": "My Drag and Drop Plugin",
     "description": "Handles drag and drop files into Blender.",
-    "author": "Your Name",
+    "author": "AIGODLIKE Community:cupcko",
     "version": (1, 0),
-    "blender": (2, 80, 0),
+    "blender": (3, 6, 0),
     "location": "View3D > Tool Shelf",
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "category": "Import-Export"
 }
+class TranslationHelper():
+    def __init__(self, name: str, data: dict, lang='zh_CN'):
+        self.name = name
+        self.translations_dict = dict()
 
-import bpy
-# Your existing code for handling drag and drop goes here
-# ...
+        for src, src_trans in data.items():
+            key = ("Operator", src)
+            self.translations_dict.setdefault(lang, {})[key] = src_trans
+            key = ("*", src)
+            self.translations_dict.setdefault(lang, {})[key] = src_trans
 
-# ... (all your existing functions and logic)
-# while True:
-#     # Timer.run1()
-#     pass
-#     # func = func_queue.get()  # 这将阻塞直到队列中有数据
-#     # func()
-# from io_scene_fbx import ImportFBX
+    def register(self):
+        try:
+            bpy.app.translations.register(self.name, self.translations_dict)
+        except(ValueError):
+            pass
+
+    def unregister(self):
+        bpy.app.translations.unregister(self.name)
 
 
-# class Dragpanel(bpy.types.Panel):
-#     bl_space_type = 'VIEW_3D'
-#     bl_region_type = 'UI'
-#     bl_category = "Item"
-#
-#     @classmethod
-#     def poll(cls, context):
-#         return True
-#
-#     bl_idname = "VIEW3D_PT_test_2"
-#     bl_label = "Cupcko:反馈群536440291"
-#
-#     def draw(self, context):
-#         layout = self.layout
-#         label = layout.label(text="Drag and Drop Files Here")
-#         layout.prop(ImportFBX, "global_scale")
-#
-#
-# classes = [
-#     Dragpanel,
-# ]
-from .format import fbx, gltf, dae, obj,abc,usd,ply,stl,x3d,bvh,svg
-from . import ops
+from . import zh_CN
 
+Drag_import_zh_CN = TranslationHelper('Drag_import_zh_CN', zh_CN.data)
+Drag_import_zh_HANS = TranslationHelper('Drag_import_zh_HANS', zh_CN.data, lang='zh_HANS')
+import threading
+from . import reg
 def register():
-    # Register handlers, UI elements, etc.
-    # bpy.utils.register_class(...)Dragpanel
-    # from bpy.utils import register_class
-    # for c in classes:
-    #     register_class(c)
-    ops.register()
-    fbx.register()
-    gltf.register()
-    dae.register()
-    obj.register()
-    abc.register()
-    usd.register()
-    ply.register()
-    stl.register()
-    x3d.register()
-    bvh.register()
-    svg.register()
+    if bpy.app.version < (4, 0, 0):
+        Drag_import_zh_CN.register()
+    else:
+        Drag_import_zh_CN.register()
+        Drag_import_zh_HANS.register()
+
+    reg.register()
     timer.timer_reg()
-    t = hook.Thread(target=hook.track, daemon=True)
+    t = threading.Thread(target=hook.track, daemon=True)
+    # t = hook.Thread(target=hook.track, daemon=True)
     t.start()
 
 
 def unregister():
-    # Unregister handlers, UI elements, etc.
-    # bpy.utils.unregister_class(...)
-    # from bpy.utils import unregister_class
-    # for c in classes:
-    #     unregister_class(c)
-    fbx.unregister()
-    gltf.unregister()
+    if bpy.app.version < (4, 0, 0):
+        Drag_import_zh_CN.unregister()
+    else:
+        Drag_import_zh_CN.unregister()
+        Drag_import_zh_HANS.unregister()
+    reg.unregister()
     timer.timer_unreg()
 
 
