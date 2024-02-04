@@ -2,7 +2,7 @@ from . import hook
 from . import timer
 import bpy
 bl_info = {
-    "name": "My Drag and Drop Plugin",
+    "name": "DragImport",
     "description": "Handles drag and drop files into Blender.",
     "author": "AIGODLIKE Community:cupcko",
     "version": (1, 0),
