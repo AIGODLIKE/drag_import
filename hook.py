@@ -18,11 +18,8 @@ from .timer import Timer
 class MyDLLWrapper:
     def __init__(self, dll_path):
         # 加载 DLL
-        print('chushihua')
         self.dll = CDLL(dll_path)
-        print('chushihua2')
         self.set_paragram()
-        print('chushihua3')
 
     def set_paragram(self):
         # 设置函数的参数类型和返回类型
@@ -68,14 +65,11 @@ class MyDLLWrapper:
 
 
 def folder_files(drag_file):
-    # elif os.path.isdir(drag_file):
-    # print(f"{drag_file} 是一个文件夹")
     files_list = []
     for root, dirs, files in os.walk(drag_file):
         for file_name in files:
             file_path = os.path.join(root, file_name)
             files_list.append(file_path)
-            # file_extension = os.path.splitext(file_name)[1].lower()
     return files_list
 
 
@@ -94,27 +88,23 @@ def copy_and_create_folder(source_file, folder_name):
         for file_name in files:
             file_path = os.path.join(root, file_name)
             files_list.append(file_path)
-            # file_extension = os.path.splitext(file_name)[1].lower()
-    # return files_list
-    # 获取源文件的绝对路径
-    # source_file_abs = os.path.abspath(source_file)
     grandparent_directory = source_file.parent
     new_folder_path = grandparent_directory / folder_name
     if not new_folder_path.exists():
         # 如果不存在，则创建新文件夹
         new_folder_path.mkdir()
-        print(f"新文件夹已创建在: {new_folder_path}")
-    else:
-        print(f"文件夹已存在: {new_folder_path}")
-    for file in files_list:
-        file_path = Path(file)
-        if file_path.exists() and file_path.is_file():
-            destination = new_folder_path / file_path.name
-            shutil.copy(file_path, destination)
-            print(f"文件已复制到: {destination}")
-        else:
-            print(f"文件不存在: {file_path}")
+        # print(f"新文件夹已创建在: {new_folder_path}")
 
+    try:
+        for file in files_list:
+            file_path = Path(file)
+            if file_path.exists() and file_path.is_file():
+                destination = new_folder_path / file_path.name
+                shutil.copy(file_path, destination)
+                # print(f"文件已复制到: {destination}")
+
+    except Exception as e:
+        print(f"dll被占用,开启了多个blender")
 
 cur_path = Path(__file__).parent
 # 它检查系统的平台并相应地加载动态链接库（DLL），这个库假设用于处理拖放事件的低级别钩子。
@@ -122,8 +112,8 @@ copy_and_create_folder(cur_path, 'drag_import_dll')
 if is_support():  # 如果支持当前操作系统
     # 获取当前文件的父目录
     dll_path = cur_path.parent.joinpath('drag_import_dll', 'hook.dll').as_posix()
-    print(cur_path)
-    print(dll_path)
+    # print(cur_path)
+    # print(dll_path)
     my_dll_wrapper = MyDLLWrapper(dll_path)
     my_dll_wrapper.set_hook(1)
 
