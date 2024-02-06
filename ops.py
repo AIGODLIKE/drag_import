@@ -42,12 +42,13 @@ class Drag_import_files(bpy.types.Operator):
         files_types=set(files_types)
         print('文件类型:',files_types)
         print('文件列表:',files)
+        file_filter=['.bvh','.gltf','.pmd','.pmx','.vmd','.vpd','.svg','usd','.x3d','.ply','.wrl','.glb','.vrm','.vrma']
         for o in bpy.context.scene.objects:
             if hasattr(o.data, 'name'):
 
                 name=o.data.name
                 # print('文件名:',name)
-                if o.type=='EMPTY' and (o.data is None or o.data.name[-4:] in files_types):
+                if o.type=='EMPTY' and (o.data is None or o.data.name[-4:] in file_filter):
                     # try:
                     bpy.data.objects.remove(o)
                     bpy.data.images.remove(bpy.data.images[name])
