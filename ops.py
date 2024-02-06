@@ -44,12 +44,9 @@ class Drag_import_files(bpy.types.Operator):
         print('文件列表:',files)
         file_filter=['.bvh','.gltf','.pmd','.pmx','.vmd','.vpd','.svg','usd','.x3d','.ply','.wrl','.glb','.vrm','.vrma']
         for o in bpy.context.scene.objects:
-            if hasattr(o.data, 'name'):
-
-                name=o.data.name
-                # print('文件名:',name)
-                if o.type=='EMPTY' and (o.data is None or o.data.name[-4:] in file_filter):
-                    # try:
+            if hasattr(o.data, 'name') and hasattr(o.data, 'colorspace_settings'):
+                name = o.data.name
+                if o.data.colorspace_settings.name=='':
                     bpy.data.objects.remove(o)
                     bpy.data.images.remove(bpy.data.images[name])
 
