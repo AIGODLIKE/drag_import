@@ -117,14 +117,6 @@ if is_support():  # 如果支持当前操作系统
     my_dll_wrapper = MyDLLWrapper(dll_path)
     my_dll_wrapper.set_hook(1)
 
-
-CACHED_DPFILES: list[Path] = []  # 声明一个名为CACHED_DPFILES的变量，它是一个Path对象的列表，并初始化为一个空列表
-
-'''跟踪线程:
-
-一个线程（t）在后台持续运行track函数。这个函数似乎在间隔时间检查拖拽的文件并更新一个缓存文件列表（CACHED_DPFILES）。当检测到新文件时，它准备在Blender节点编辑器中显示一个弹出菜单以导入文件。'''
-
-
 def track():  # 定义一个名为track的函数
     while True:  # 创建一个无限循环
         sleep(1 / 30)  # 每次循环暂停约1/30秒

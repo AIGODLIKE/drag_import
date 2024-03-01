@@ -29,18 +29,19 @@ class drag_import_abc_prop(bpy.types.PropertyGroup):
         default=True
     )
     is_sequence: BoolProperty(
-        name='is_sequence',
+        name='Is Sequence',
         description='',
         default=False
     )
     validate_meshes: BoolProperty(
-        name='validate_meshes',
+        name='Validate Meshes',
         description='',
         default=False
     )
     always_add_cache_reader: BoolProperty(
-        name='always_add_cache_reader',
-        description='',
+        name='Always Add Cache Reader',
+        description='Add cache modifiers and constraints to imported objects even if they are not animated so that '
+                    'they can be updated when reloading the Alembic archive',
         default=False
     )
 

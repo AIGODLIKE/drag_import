@@ -92,6 +92,11 @@ class drag_import_usd_prop(bpy.types.PropertyGroup):
         description='Create unique Blender objects for USD instances',
         default=True
     )
+    support_scene_instancing: BoolProperty(
+        name='Scene Instancing',
+        description='Import USD scene graph instances as collection instances',
+        default=True
+    )
     import_visible_only: BoolProperty(
         name='Visible Primitives Only',
         description="Do not import invisible USD primitives.Only applies to primitives with a non-animated visibility attribute.Primitives with animated visibility will always be imported",
@@ -191,6 +196,7 @@ class Drag_import_usd(bpy.types.Operator, drag_import_usd_prop,drag_import_prop)
     bl_options = {'REGISTER','PRESET','UNDO'}
     def draw(self, context):
         types = self.layout.box()
+        types.scale_y=0.7
         prop = context.scene.drag_import_usd_prop
         types.prop(prop, "import_cameras")
         types.prop(prop, "import_curves")
@@ -205,12 +211,16 @@ class Drag_import_usd(bpy.types.Operator, drag_import_usd_prop,drag_import_prop)
         types.prop(prop, "prim_path_mask")
         types.prop(prop, "scale")
         mesh=self.layout.box()
+        mesh.scale_y=0.7
         mesh.prop(prop, "read_mesh_uvs")
         mesh.prop(prop, "read_mesh_colors")
         if bpy.app.version>=(4,0,0):
             mesh.prop(prop, "read_mesh_attributes")
         mesh.prop(prop, "import_subdiv")
-        mesh.prop(prop, "import_instance_proxies")
+        if  bpy.app.version<(4, 1, 0):
+            mesh.prop(prop, "import_instance_proxies")
+        else:
+            mesh.prop(prop, "support_scene_instancing")
         mesh.prop(prop, "import_visible_only")
         mesh.prop(prop, "import_guide")
         mesh.prop(prop, "import_proxy")
@@ -220,11 +230,13 @@ class Drag_import_usd(bpy.types.Operator, drag_import_usd_prop,drag_import_prop)
         mesh.prop(prop, "create_collection")
         mesh.prop(prop, "light_intensity_scale")
         mat=self.layout.box()
+        mat.scale_y = 0.7
         mat.prop(prop, "import_all_materials")
         mat.prop(prop, "import_usd_preview")
         mat.prop(prop, "set_material_blend")
         mat.prop(prop, "mtl_name_collision_mode")
         textures=self.layout.box()
+        textures.scale_y = 0.7
         textures.prop(prop, "import_textures_mode")
         textures.prop(prop, "import_textures_dir")
         textures.prop(prop, "tex_name_collision_mode")
@@ -237,10 +249,12 @@ class Drag_import_usd(bpy.types.Operator, drag_import_usd_prop,drag_import_prop)
             return self.execute(context)
     def execute(self, context):
         self.set_parameter(context)
-        if bpy.app.version>=(4,0,0):
+        if bpy.app.version>=(4,1,0):
             keywords = self.as_keywords(ignore=('filepath','files','pop_menu'))
+        elif (4,1,0)>bpy.app.version>=(4,0,0):
+            keywords = self.as_keywords(ignore=('filepath', 'files', 'pop_menu','support_scene_instancing'))
         else:
-            keywords = self.as_keywords(ignore=('filepath','files','pop_menu','import_skeletons','import_blendshapes','read_mesh_attributes'))
+            keywords = self.as_keywords(ignore=('filepath','files','pop_menu','import_skeletons','import_blendshapes','read_mesh_attributes','support_scene_instancing'))
         for f in self.files:
             bpy.ops.wm.usd_import(filepath=f.name, **keywords)
         ret = {'FINISHED'}

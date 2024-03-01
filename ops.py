@@ -19,7 +19,6 @@ class Drag_import_files(bpy.types.Operator):
         description="Pop-up Import Settings Window",
         default=False
     )
-    single_fbx=0
 
     def invoke(self, context, event):
         if event.ctrl:
@@ -39,10 +38,10 @@ class Drag_import_files(bpy.types.Operator):
                 files.setdefault(f'{extension}',[])
             files[f'{extension}'].append({'name':f})
             files_types.append(extension)
-        files_types=set(files_types)
-        print('文件类型:',files_types)
+        files_len=set(files_types)
+        print('文件类型:',files_len)
         print('文件列表:',files)
-        file_filter=['.bvh','.gltf','.pmd','.pmx','.vmd','.vpd','.svg','usd','.x3d','.ply','.wrl','.glb','.vrm','.vrma']
+        file_filter=['.bvh','.gltf','.3ds','.pmd','.pmx','.vmd','.vpd','.svg','usd','.x3d','.ply','.wrl','.glb','.vrm','.vrma']
         for o in bpy.context.scene.objects:
             if hasattr(o.data, 'name') and hasattr(o.data, 'colorspace_settings'):
                 name = o.data.name
@@ -52,7 +51,13 @@ class Drag_import_files(bpy.types.Operator):
 
                     # except:
                     #     pass
-        for i in files_types:
+        #4.1以后使用原生单个导入
+        # if bpy.app.version>=(4,1,0):
+        #     if len(files_types)<=1 and not self.pop_menu:
+        #         self.pop_menu = False
+        #         bpy.context.scene.drag_import_prop.files_string.clear()
+        #         return {'FINISHED'}
+        for i in files_len:
             if i=='.fbx':
                 bpy.ops.drag_import.fbx('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
             elif i== '.obj':
@@ -70,7 +75,10 @@ class Drag_import_files(bpy.types.Operator):
             elif i =='.ply':
                 bpy.ops.drag_import.ply('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
             elif i =='.stl':
-                bpy.ops.drag_import.stl('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
+                try:
+                    bpy.ops.drag_import.stl410('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
+                except:
+                    bpy.ops.drag_import.stl('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
             elif i =='.bvh':
                 bpy.ops.drag_import.bvh('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
             elif i =='.vrm':
@@ -126,9 +134,13 @@ class Drag_import_files(bpy.types.Operator):
                 except:
                     pass
                 bpy.ops.drag_import.x3d('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
+            elif i =='.3ds':
+                try:
+                    bpy.ops.drag_import.max3ds('INVOKE_DEFAULT',files=files[i],pop_menu=self.pop_menu)
 
+                except:
+                    self.report({'INFO'},'启用最新版3ds导入插件')
         self.pop_menu=False
-        self.single_fbx=0
         print('清除前',bpy.context.scene.drag_import_prop.files_string)
         bpy.context.scene.drag_import_prop.files_string.clear()
         print('清除后',bpy.context.scene.drag_import_prop.files_string)

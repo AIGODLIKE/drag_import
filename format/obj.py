@@ -69,7 +69,7 @@ class drag_import_obj_prop(bpy.types.PropertyGroup):
         default=False
     )
     validate_meshes: BoolProperty(
-        name='validate_meshes',
+        name='Validate Meshes',
         description='',
         default=False
     )
