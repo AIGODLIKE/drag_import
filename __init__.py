@@ -5,7 +5,7 @@ bl_info = {
     "name": "DragImport",
     "description": "Handles drag and drop files into Blender.",
     "author": "AIGODLIKE Community:cupcko",
-    "version": (1, 0,1),
+    "version": (1, 0,2),
     "blender": (3, 6, 0),
     "location": "View3D > Tool Shelf",
     "warning": "",  # used for warning icon and text in addons panel
