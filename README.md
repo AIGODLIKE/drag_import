@@ -1,2 +1,2 @@
 # drag_import
- drag import
+ blender drag import
